@@ -19,7 +19,7 @@ const LiveLocationTracker = () => {
   const [locationEnabled, setLocationEnabled] = useState(false);
 
   // Tracking method states
-  const [trackingBy, setTrackingBy] = useState("mobile"); // "mobile" or "order"
+  const [trackingBy, setTrackingBy] = useState("mobile"); 
   const [mobile, setMobile] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -33,7 +33,7 @@ const LiveLocationTracker = () => {
   // Timeout duration before considering inactive/offline
   const INACTIVITY_TIMEOUT = 20 * 1000; // 20 seconds
 
-  // Load user from localStorage
+
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
@@ -52,7 +52,7 @@ const LiveLocationTracker = () => {
     }
   }, []);
 
-  // Enable location access
+  
   const enableLocation = () => {
     if (!navigator.geolocation) {
       setStatus("Geolocation is not supported");
@@ -77,7 +77,7 @@ const LiveLocationTracker = () => {
     );
   };
 
-  // Simulate OTP send
+  
   const handleSendOtp = () => {
     if (mobile.length !== 10) {
       alert("Enter valid 10-digit mobile number");
@@ -87,7 +87,7 @@ const LiveLocationTracker = () => {
     alert("OTP sent to " + mobile);
   };
 
-  // Handle OTP digit change in each box
+  
   const handleOtpChange = (e, index) => {
     const val = e.target.value.replace(/[^0-9]/g, "");
     if (val.length > 1) return;
@@ -96,19 +96,19 @@ const LiveLocationTracker = () => {
     newOtp[index] = val;
     setOtpDigits(newOtp);
 
-    // Move focus to next box if not last and input is not empty
+   
     if (val && index < otpDigits.length - 1) {
       otpInputsRef.current[index + 1].focus();
     }
   };
 
-  // Handle backspace navigation in OTP inputs
+ 
   const handleOtpKeyDown = (e, index) => {
     if (e.key === "Backspace") {
       if (otpDigits[index] === "") {
         if (index > 0) otpInputsRef.current[index - 1].focus();
       } else {
-        // Clear current box on backspace
+        
         const newOtp = [...otpDigits];
         newOtp[index] = "";
         setOtpDigits(newOtp);
@@ -116,7 +116,7 @@ const LiveLocationTracker = () => {
     }
   };
 
-  // Verify OTP entered
+  
   const verifyOtp = () => {
     const fullOtp = otpDigits.join("");
     if (fullOtp === "1234") {
@@ -127,7 +127,7 @@ const LiveLocationTracker = () => {
     }
   };
 
-  // Start tracking location
+  
   const startTracking = () => {
     if (!locationEnabled) {
       alert("Please enable location first");
@@ -182,7 +182,7 @@ const LiveLocationTracker = () => {
     setStatus("Tracking started");
   };
 
-  // Stop tracking location
+ 
   const stopTracking = () => {
     if (watchId) {
       navigator.geolocation.clearWatch(watchId);
@@ -192,7 +192,7 @@ const LiveLocationTracker = () => {
     setStatus("Tracking stopped");
   };
 
-  // Send location data to backend (mock)
+ 
   const sendToBackend = async (data) => {
     try {
       await fetch("/api/location", {
@@ -205,7 +205,7 @@ const LiveLocationTracker = () => {
     }
   };
 
-  // Monitor for inactivity (no location update)
+  
   useEffect(() => {
     if (!tracking) return;
 
@@ -220,7 +220,7 @@ const LiveLocationTracker = () => {
     return () => clearInterval(interval);
   }, [tracking]);
 
-  // Listen for permission changes
+  
   useEffect(() => {
     if (!navigator.permissions) return;
 
@@ -253,7 +253,7 @@ const LiveLocationTracker = () => {
           Live Location Tracker
         </h2>
 
-        {/* Tracking method toggle */}
+       
         <div className="flex gap-4 mb-4 justify-center">
           <button
             onClick={() => {
@@ -281,7 +281,7 @@ const LiveLocationTracker = () => {
           </button>
         </div>
 
-        {/* Inputs */}
+       
         <div className="space-y-4">
           {trackingBy === "mobile" && (
             <>
@@ -372,7 +372,7 @@ const LiveLocationTracker = () => {
           </div>
         </div>
 
-        {/* Enable location and track buttons */}
+       
         <div className="flex justify-center gap-4">
           <button
             onClick={enableLocation}
@@ -414,7 +414,7 @@ const LiveLocationTracker = () => {
           )}
         </div>
 
-        {/* Location data */}
+    
         <table className="w-full table-auto text-left border-separate border-spacing-y-2 mt-6">
           <tbody>
             <tr>

@@ -1,4 +1,4 @@
-// backend/routes/location.js
+
 const express = require("express");
 const router = express.Router();
 
@@ -10,7 +10,7 @@ router.post("/", (req, res) => {
   }
 
   console.log("Received location:", lat, lng);
-  // Save to DB, or do something useful
+ 
 
   return res.status(200).json({ message: "Location received" });
 });

@@ -1,4 +1,4 @@
-// src/pages/Signup.js
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +15,7 @@ export default function Signup() {
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
       >
-        {/* Header */}
+        
         <div className="flex items-center justify-between border-b border-white/30 pb-4 mb-4">
           <h2 className="text-2xl font-semibold text-[#d33c3c]">Sign Up</h2>
           <button
@@ -26,7 +26,7 @@ export default function Signup() {
           </button>
         </div>
 
-        {/* Form */}
+        
         <motion.form
           className="space-y-6 mb-6"
           initial={{ opacity: 0, y: 30 }}
@@ -67,7 +67,7 @@ export default function Signup() {
           </motion.button>
         </motion.form>
 
-        {/* Footer */}
+        
         <motion.div
           className="border-t border-white/30 pt-4 text-sm text-black text-center"
           initial={{ opacity: 0 }}

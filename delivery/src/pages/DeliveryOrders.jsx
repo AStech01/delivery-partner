@@ -9,7 +9,7 @@ const ordersData = [
     item: "Wireless Headphones",
     customer: "Alice Johnson",
     address: "123 Main St, Springfield",
-    status: "pending", // pending, delivered, cancelled
+    status: "pending", 
   },
   {
     id: "ORD5678",
@@ -25,7 +25,7 @@ const ordersData = [
     address: "789 Oak St, Ogdenville",
     status: "cancelled",
   },
-  // Add more orders as needed
+ 
 ];
 
 const statusColors = {

@@ -1,4 +1,4 @@
-// Dummy Delivery Partners
+
 export const partners = [
     {
       id: 'DP001',
@@ -26,7 +26,7 @@ export const partners = [
     },
   ];
   
-  // Dummy Orders for Assignment
+  
   export const orders = [
     {
       id: 'ORD1001',
@@ -45,7 +45,7 @@ export const partners = [
     },
   ];
   
-  // Dummy Performance Report
+ 
   export const performance = [
     {
       name: 'Ravi Kumar',
@@ -64,7 +64,7 @@ export const partners = [
     },
   ];
   
-  // Dummy Tracking Timeline
+ 
   export const trackingData = [
     { timestamp: '2025-07-10 10:00 AM', status: 'Order Placed' },
     { timestamp: '2025-07-10 12:00 PM', status: 'Picked Up from Warehouse' },

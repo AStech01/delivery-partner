@@ -1,4 +1,4 @@
-// src/pages/Home.jsx
+
 import React, { useState, useEffect } from 'react';
 import { FaShippingFast, FaMapMarkerAlt, FaSignOutAlt } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,7 +12,7 @@ export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Signup form state
+
   const [signupData, setSignupData] = useState({
     name: '',
     email: '',
@@ -20,7 +20,7 @@ export default function Home() {
     location: '',
   });
 
-  // Login form state
+  
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
@@ -30,7 +30,7 @@ export default function Home() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // On component mount, load user from localStorage if exists
+   
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -84,25 +84,25 @@ const handleLoginSubmit = async (e) => {
 
     const data = response.data;
 
-    // ✅ Store token
+    
     if (data.token) {
       localStorage.setItem('token', data.token);
     }
 
-    // ✅ Store user info (main part)
+    
     if (data.user) {
-      localStorage.setItem('user', JSON.stringify(data.user)); // <- THIS is what you're asking about
-      setUser(data.user); // update React state
+      localStorage.setItem('user', JSON.stringify(data.user)); 
+      setUser(data.user); 
     } else {
-      // Fallback in case server only returns email
+      
       localStorage.setItem('user', JSON.stringify({ name: loginData.email }));
       setUser({ name: loginData.email });
     }
 
-    // ✅ Clear form and redirect
+  
     setIsLoginOpen(false);
     setLoginData({ email: '', password: '' });
-    navigate('/'); // Go to homepage or tracking page
+    navigate('/'); 
   } catch (err) {
     if (err.response) {
       setError(err.response.data.message || 'Login failed');
@@ -113,7 +113,7 @@ const handleLoginSubmit = async (e) => {
 };
 
 
-  // Logout function (optional)
+  
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -124,7 +124,7 @@ const handleLoginSubmit = async (e) => {
     <div className="min-h-screen flex flex-col overflow-hidden relative">
       <Navbar />
 
-      {/* Main content */}
+      
       <div className="flex justify-center items-center flex-grow bg-gray-100 p-6">
         <motion.div
           className="w-full max-w-7xl md:h-[700px] h-[600px] rounded-2xl shadow-xl overflow-hidden relative"
@@ -188,7 +188,7 @@ const handleLoginSubmit = async (e) => {
         </motion.div>
       </div>
 
-      {/* Signup Modal */}
+      
       <AnimatePresence>
         {isSignupOpen && (
           <motion.div
@@ -209,7 +209,7 @@ const handleLoginSubmit = async (e) => {
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
+             
               <div className="flex items-center justify-between border-b border-gray-300 pb-4 mb-4">
                 <h2 className="text-2xl font-semibold text-[#d33c3c]">Sign Up</h2>
                 <button
@@ -223,12 +223,12 @@ const handleLoginSubmit = async (e) => {
                 </button>
               </div>
 
-              {/* Error message */}
+              
               {error && (
                 <p className="mb-4 text-red-600 font-semibold">{error}</p>
               )}
 
-              {/* Form */}
+            
               <motion.form
                 className="space-y-6 mb-6"
                 initial={{ opacity: 0, y: 30 }}
@@ -281,7 +281,7 @@ const handleLoginSubmit = async (e) => {
                 </motion.button>
               </motion.form>
 
-              {/* Footer */}
+              
               <motion.div
                 className="pt-3 text-sm text-black text-center"
                 initial={{ opacity: 0 }}
@@ -305,7 +305,7 @@ const handleLoginSubmit = async (e) => {
         )}
       </AnimatePresence>
 
-      {/* Login Modal */}
+      
       <AnimatePresence>
         {isLoginOpen && (
           <motion.div
@@ -326,7 +326,7 @@ const handleLoginSubmit = async (e) => {
               transition={{ type: 'spring', stiffness: 300, damping: 25 }}
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Header */}
+              
               <div className="flex items-center justify-between border-b border-gray-300 pb-4 mb-4">
                 <h2 className="text-2xl font-semibold text-[#d33c3c]">Login</h2>
                 <button
@@ -340,12 +340,12 @@ const handleLoginSubmit = async (e) => {
                 </button>
               </div>
 
-              {/* Error message */}
+              
               {error && (
                 <p className="mb-4 text-red-600 font-semibold">{error}</p>
               )}
 
-              {/* Form */}
+              
               <motion.form
                 className="space-y-6 mb-6"
                 initial={{ opacity: 0, y: 30 }}
@@ -392,7 +392,7 @@ const handleLoginSubmit = async (e) => {
                 </motion.button>
               </motion.form>
 
-              {/* Footer */}
+             
               <motion.div
                 className="pt-3 text-sm text-black text-center"
                 initial={{ opacity: 0 }}

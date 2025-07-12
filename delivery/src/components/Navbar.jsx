@@ -41,7 +41,7 @@ const Navbar = () => {
   <FaTruck className="text-indigo-600" /> DeliveryPartner
 </Link>
 
-        {/* Desktop Menu */}
+        
         <div className="hidden lg:flex items-center gap-8">
           <button
             onClick={() => navigate('/')}
@@ -91,7 +91,7 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu Toggle */}
+       
         <div className="lg:hidden">
           <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-gray-700">
             {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
@@ -99,7 +99,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+     
       {isMenuOpen && (
         <div className="lg:hidden px-4 pt-4 space-y-3">
           <button
