@@ -50,7 +50,7 @@ export default function Home() {
     setError('');
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/auth/signup',
+        'http://localhost:5000/api/auth/register',
         signupData,
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -71,45 +71,55 @@ const handleLoginSubmit = async (e) => {
   e.preventDefault();
   setError('');
 
-  try {
-    const response = await axios.post(
-      'http://localhost:5000/api/auth/login',
-      loginData,
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-
-    alert('Welcome to Delivery Partner');
-
-    const data = response.data;
-
-    
-    if (data.token) {
-      localStorage.setItem('token', data.token);
+try {
+  const response = await axios.post(
+    'http://localhost:5000/api/auth/login',
+    loginData,
+    {
+      headers: { 'Content-Type': 'application/json' },
     }
+  );
 
-    
-    if (data.user) {
-      localStorage.setItem('user', JSON.stringify(data.user)); 
-      setUser(data.user); 
-    } else {
-      
-      localStorage.setItem('user', JSON.stringify({ name: loginData.email }));
-      setUser({ name: loginData.email });
-    }
+  alert('Welcome to Delivery Partner');
 
-  
-    setIsLoginOpen(false);
-    setLoginData({ email: '', password: '' });
-    navigate('/'); 
-  } catch (err) {
-    if (err.response) {
-      setError(err.response.data.message || 'Login failed');
-    } else {
-      setError('Login failed due to network/server error.');
-    }
+  const data = response.data;
+
+  // Store token
+  if (data.token) {
+    localStorage.setItem('token', data.token);
   }
+
+  // Store user (with username and email)
+  if (data.user) {
+    const userInfo = {
+      username: data.user.username || data.user.name || loginData.email,
+      email: data.user.email || loginData.email,
+    };
+
+    localStorage.setItem('user', JSON.stringify(userInfo));
+    setUser(userInfo);
+  } else {
+    const fallbackUser = {
+      username: loginData.email,
+      email: loginData.email,
+    };
+
+    localStorage.setItem('user', JSON.stringify(fallbackUser));
+    setUser(fallbackUser);
+  }
+
+  // Cleanup and redirect
+  setIsLoginOpen(false);
+  setLoginData({ email: '', password: '' });
+  navigate('/');
+} catch (err) {
+  if (err.response) {
+    setError(err.response.data.message || 'Login failed');
+  } else {
+    setError('Login failed due to network/server error.');
+  }
+}
+
 };
 
 
