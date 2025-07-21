@@ -50,7 +50,7 @@ export default function Home() {
     setError('');
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/auth/register',
+        'http://localhost:5000/auth/register',
         signupData,
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -73,7 +73,7 @@ const handleLoginSubmit = async (e) => {
 
 try {
   const response = await axios.post(
-    'http://localhost:5000/api/auth/login',
+    'http://localhost:5000/auth/login',
     loginData,
     {
       headers: { 'Content-Type': 'application/json' },
@@ -246,7 +246,7 @@ try {
                 transition={{ delay: 0.2, duration: 0.6 }}
                 onSubmit={handleSignupSubmit}
               >
-                {['name', 'email', 'password', 'location'].map((field, index) => {
+                {['username', 'email', 'password', 'location'].map((field, index) => {
                   const label =
                     field.charAt(0).toUpperCase() + field.slice(1);
                   const type =

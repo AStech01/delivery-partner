@@ -131,7 +131,6 @@
 //   );
 // }
 
-
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTruck, FaCheckCircle, FaTimesCircle } from "react-icons/fa";
@@ -147,25 +146,28 @@ export default function DeliveryOrders() {
   const [orders, setOrders] = useState([]);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [trackingLogs, setTrackingLogs] = useState([]);
- 
+
+  // Base URL for API
+  const API_BASE_URL = "http://localhost:5000";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     // Fetch orders from backend
-    fetch("/api/orders", {
-  headers: { Authorization: `Bearer ${token}` }
-})
-      .then(res => res.json())
-      .then(data => setOrders(data))
+    fetch(`${API_BASE_URL}/orders`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setOrders(data))
       .catch(console.error);
   }, []);
 
   useEffect(() => {
     if (!selectedOrderId) return;
-    // Fetch tracking logs every 5 seconds
+
     const fetchLogs = () => {
-      fetch(`/api/location/${selectedOrderId}`)
-        .then(res => res.json())
-        .then(data => setTrackingLogs(data))
+      fetch(`${API_BASE_URL}/location/${selectedOrderId}`)
+        .then((res) => res.json())
+        .then((data) => setTrackingLogs(data))
         .catch(console.error);
     };
 
@@ -199,9 +201,7 @@ export default function DeliveryOrders() {
                     ${isSelected ? "bg-indigo-50 border-indigo-400" : "bg-white"}
                     flex flex-col md:flex-row md:justify-between md:items-center
                   `}
-                  onClick={() =>
-                    setSelectedOrderId(isSelected ? null : id)
-                  }
+                  onClick={() => setSelectedOrderId(isSelected ? null : id)}
                 >
                   <div className="flex items-center gap-4 mb-3 md:mb-0">
                     <FaTruck className="text-indigo-600 text-2xl" />
@@ -213,12 +213,20 @@ export default function DeliveryOrders() {
                   </div>
 
                   <div className="flex items-center gap-4">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${statusColors[status]}`}>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                        statusColors[status]
+                      }`}
+                    >
                       {status.toUpperCase()}
                     </span>
 
-                    {status === "delivered" && <FaCheckCircle className="text-green-600 text-xl" />}
-                    {status === "cancelled" && <FaTimesCircle className="text-red-600 text-xl" />}
+                    {status === "delivered" && (
+                      <FaCheckCircle className="text-green-600 text-xl" />
+                    )}
+                    {status === "cancelled" && (
+                      <FaTimesCircle className="text-red-600 text-xl" />
+                    )}
                   </div>
                 </motion.div>
               );

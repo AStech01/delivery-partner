@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  FaMapMarkerAlt,
   FaSatelliteDish,
   FaPlay,
   FaStop,
@@ -10,7 +9,7 @@ import Navbar from "../components/Navbar";
 
 const LiveLocationTracker = () => {
   const [user, setUser] = useState({ username: "", email: "" });
-  const [trackingBy, setTrackingBy] = useState("mobile");
+  const [trackingBy, setTrackingBy] = useState("mobile"); // mobile or order
   const [mobile, setMobile] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [orderId, setOrderId] = useState("");
@@ -24,11 +23,8 @@ const LiveLocationTracker = () => {
   const [watchId, setWatchId] = useState(null);
   const [location, setLocation] = useState(null);
   const lastUpdateRef = useRef(Date.now());
-  const [locationLogs, setLocationLogs] = useState([]);
-  const [trackingInfoVisible, setTrackingInfoVisible] = useState(false);
 
-  const INACTIVITY_TIMEOUT = 20 * 1000;
-
+  // Load user from localStorage or default Guest
   useEffect(() => {
     const stored = localStorage.getItem("user");
     if (stored) {
@@ -46,45 +42,12 @@ const LiveLocationTracker = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (!navigator.permissions) return;
-    let perm;
-    navigator.permissions.query({ name: "geolocation" }).then((st) => {
-      perm = st;
-      st.onchange = () => {
-        if (st.state !== "granted" && tracking) {
-          stopTracking();
-          setLocationEnabled(false);
-          alert("Location permission revoked. Tracking stopped.");
-          setStatus("Tracking stopped — permission revoked");
-        }
-      };
-    });
-    return () => perm && (perm.onchange = null);
-  }, [tracking]);
-
-  useEffect(() => {
-    if (trackingBy === "order" && tracking) {
-      fetchLogs();
-      const iv = setInterval(fetchLogs, 5000);
-      return () => clearInterval(iv);
-    }
-  }, [trackingBy, tracking, orderId]);
-
-  useEffect(() => {
-    if (!tracking) return;
-    const iv = setInterval(() => {
-      if (Date.now() - lastUpdateRef.current > INACTIVITY_TIMEOUT) {
-        stopTracking();
-        setStatus("Offline: Location updates stopped");
-        alert("Location updates stopped due to inactivity.");
-      }
-    }, 5000);
-    return () => clearInterval(iv);
-  }, [tracking]);
-
+  // Enable Location Permission
   const enableLocation = () => {
-    if (!navigator.geolocation) return setStatus("Geolocation not supported");
+    if (!navigator.geolocation) {
+      setStatus("Geolocation not supported");
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (p) => {
         setLocationEnabled(true);
@@ -98,8 +61,12 @@ const LiveLocationTracker = () => {
     );
   };
 
+  // OTP handling functions (simplified, OTP = 1234)
   const handleSendOtp = () => {
-    if (mobile.length !== 10) return alert("Enter valid 10-digit mobile number");
+    if (mobile.length !== 10) {
+      alert("Enter a valid 10-digit mobile number");
+      return;
+    }
     setOtpSent(true);
     alert("OTP sent to " + mobile);
   };
@@ -107,57 +74,72 @@ const LiveLocationTracker = () => {
   const handleOtpChange = (e, i) => {
     const v = e.target.value.replace(/[^0-9]/g, "");
     if (!v) return;
-    const nxt = [...otpDigits];
-    nxt[i] = v;
-    setOtpDigits(nxt);
+    const newOtp = [...otpDigits];
+    newOtp[i] = v;
+    setOtpDigits(newOtp);
     if (i < otpDigits.length - 1) otpInputsRef.current[i + 1]?.focus();
   };
 
   const handleOtpKey = (e, i) => {
     if (e.key === "Backspace") {
-      const nxt = [...otpDigits];
-      if (!nxt[i] && i > 0) otpInputsRef.current[i - 1]?.focus();
-      nxt[i] = "";
-      setOtpDigits(nxt);
+      const newOtp = [...otpDigits];
+      if (!newOtp[i] && i > 0) otpInputsRef.current[i - 1]?.focus();
+      newOtp[i] = "";
+      setOtpDigits(newOtp);
     }
   };
 
+  // Verify OTP and start tracking
   const verifyOtp = () => {
     if (otpDigits.join("") === "1234") {
       alert("OTP verified");
       startTracking();
-    } else alert("Invalid OTP");
-  };
-
-  const fetchLogs = async () => {
-    if (!orderId) return;
-    try {
-      console.log("Fetching logs for order:", orderId);
-      const res = await fetch(`/api/location/${orderId}`);
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const data = await res.json();
-      if (!Array.isArray(data)) {
-        console.warn("Expected an array but got:", data);
-        setLocationLogs([]);
-        return;
-      }
-      setLocationLogs(data);
-    } catch (error) {
-      console.error("Fetch logs failed:", error);
-      setLocationLogs([]);
+    } else {
+      alert("Invalid OTP");
     }
   };
 
+  // Send location data to backend
+  const sendToBackend = async (data) => {
+    const token = localStorage.getItem("token") || ""; // adjust token retrieval as needed
+    try {
+      const res = await fetch("http://localhost:5000/location", {
+        method: "POST",
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        alert(result.message || "Failed to send location");
+      }
+    } catch (err) {
+      console.error("Error sending location:", err);
+      alert("Network error while sending location");
+    }
+  };
+
+  // Start location tracking
   const startTracking = () => {
-    if (!locationEnabled) return alert("Enable location first");
-    if (!item.trim() || !place.trim()) return alert("Enter both item and place");
+    if (!locationEnabled) {
+      alert("Please enable location permissions first");
+      return;
+    }
+    if (!item.trim() || !place.trim()) {
+      alert("Please enter both item and place");
+      return;
+    }
     if (
-      (trackingBy === "mobile" && mobile.length !== 10) ||
+      (trackingBy === "mobile" && mobile.trim().length !== 10) ||
       (trackingBy === "order" && !orderId.trim())
-    )
-      return alert("Provide valid info");
+    ) {
+      alert("Please provide valid tracking info");
+      return;
+    }
 
     lastUpdateRef.current = Date.now();
 
@@ -166,20 +148,27 @@ const LiveLocationTracker = () => {
         lastUpdateRef.current = Date.now();
         const coords = { lat: p.coords.latitude, lng: p.coords.longitude };
         setLocation(coords);
-        sendToBackend({
-          ...coords,
-          item,
-          place,
+
+        // Prepare data to send
+        const dataToSend = {
+          lat: coords.lat,
+          lng: coords.lng,
+          item: item.trim(),
+          place: place.trim(),
           username: user.username,
           email: user.email,
-          ...(trackingBy === "mobile" ? { mobile } : { orderId }),
-        });
+        };
+        if (trackingBy === "mobile") {
+          dataToSend.mobile = mobile.trim();
+        } else {
+          dataToSend.orderId = orderId.trim();
+        }
+
+        sendToBackend(dataToSend);
       },
       (err) => {
-        console.error(err);
+        alert("Error while tracking location: " + err.message);
         stopTracking();
-        setStatus("Error: " + err.message);
-        alert("Tracking error: " + err.message);
       },
       { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
     );
@@ -187,26 +176,14 @@ const LiveLocationTracker = () => {
     setWatchId(id);
     setTracking(true);
     setStatus("Tracking started");
-    setTrackingInfoVisible(true);
   };
 
+  // Stop location tracking
   const stopTracking = () => {
     if (watchId) navigator.geolocation.clearWatch(watchId);
     setTracking(false);
     setWatchId(null);
     setStatus("Tracking stopped");
-  };
-
-  const sendToBackend = async (data) => {
-    const token = localStorage.getItem("token");
-    await fetch("/api/location", {
-      method: "POST",
-      headers: {
-        Authorization: token ? `Bearer ${token}` : "",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }).catch(console.error);
   };
 
   return (
@@ -218,28 +195,28 @@ const LiveLocationTracker = () => {
           Live Location Tracker
         </h2>
 
-        {/* Toggle */}
+        {/* Toggle tracking mode */}
         <div className="flex justify-center gap-4">
-          {["mobile", "order"].map((t) => (
+          {["mobile", "order"].map((mode) => (
             <button
-              key={t}
+              key={mode}
               onClick={() => {
-                setTrackingBy(t);
+                setTrackingBy(mode);
                 setOtpSent(false);
                 setOtpDigits(["", "", "", ""]);
               }}
               className={`px-4 py-1 rounded-full text-sm font-medium ${
-                trackingBy === t
+                trackingBy === mode
                   ? "bg-indigo-600 text-white"
                   : "bg-gray-200 text-gray-800"
               }`}
             >
-              {t === "mobile" ? "Track by Mobile" : "Track by Order ID"}
+              {mode === "mobile" ? "Track by Mobile" : "Track by Order ID"}
             </button>
           ))}
         </div>
 
-        {/* Inputs */}
+        {/* Input fields */}
         <div className="space-y-4">
           {trackingBy === "mobile" ? (
             <>
@@ -249,16 +226,16 @@ const LiveLocationTracker = () => {
                   type="text"
                   maxLength={10}
                   value={mobile}
-                  onChange={(e) =>
-                    setMobile(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => setMobile(e.target.value.replace(/\D/g, ""))}
                   className="mt-1 w-full border rounded px-3 py-2"
+                  disabled={tracking}
                 />
               </div>
               {!otpSent ? (
                 <button
                   onClick={handleSendOtp}
                   className="w-full bg-blue-600 text-white py-2 rounded"
+                  disabled={tracking || mobile.length !== 10}
                 >
                   Send OTP
                 </button>
@@ -266,12 +243,12 @@ const LiveLocationTracker = () => {
                 <div>
                   <label className="block font-medium">Enter OTP</label>
                   <div className="flex justify-center gap-2 mt-1">
-                    {otpDigits.map((d, i) => (
+                    {otpDigits.map((digit, i) => (
                       <input
                         key={i}
                         type="text"
                         maxLength={1}
-                        value={d}
+                        value={digit}
                         ref={(el) => (otpInputsRef.current[i] = el)}
                         onChange={(e) => handleOtpChange(e, i)}
                         onKeyDown={(e) => handleOtpKey(e, i)}
@@ -282,6 +259,7 @@ const LiveLocationTracker = () => {
                   <button
                     onClick={verifyOtp}
                     className="mt-4 w-full bg-green-600 text-white py-2 rounded"
+                    disabled={otpDigits.some((d) => d === "") || tracking}
                   >
                     Verify & Start
                   </button>
@@ -296,6 +274,7 @@ const LiveLocationTracker = () => {
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 className="mt-1 w-full border rounded px-3 py-2"
+                disabled={tracking}
               />
             </div>
           )}
@@ -306,6 +285,7 @@ const LiveLocationTracker = () => {
               value={item}
               onChange={(e) => setItem(e.target.value)}
               className="mt-1 w-full border rounded px-3 py-2"
+              disabled={tracking}
             />
           </div>
           <div>
@@ -314,6 +294,7 @@ const LiveLocationTracker = () => {
               value={place}
               onChange={(e) => setPlace(e.target.value)}
               className="mt-1 w-full border rounded px-3 py-2"
+              disabled={tracking}
             />
           </div>
         </div>
@@ -325,6 +306,7 @@ const LiveLocationTracker = () => {
             className={`flex items-center gap-2 px-5 py-2 rounded text-white ${
               locationEnabled ? "bg-green-600" : "bg-gray-600"
             }`}
+            disabled={locationEnabled}
           >
             <FaLocationArrow />
             {locationEnabled ? "Location Enabled" : "Enable Location"}
@@ -333,7 +315,12 @@ const LiveLocationTracker = () => {
           {!tracking && trackingBy === "order" && (
             <button
               onClick={startTracking}
-              disabled={!locationEnabled || !item || !place || !orderId}
+              disabled={
+                !locationEnabled ||
+                !item.trim() ||
+                !place.trim() ||
+                !orderId.trim()
+              }
               className={`flex items-center gap-2 px-5 py-2 rounded text-white ${
                 locationEnabled && item && place && orderId
                   ? "bg-blue-600"
@@ -379,72 +366,6 @@ const LiveLocationTracker = () => {
             <span>{location?.lng?.toFixed(6) ?? "N/A"}</span>
           </div>
         </div>
-
-        {/* Tracking Summary Table */}
-        {trackingInfoVisible && (
-          <div className="mt-6 bg-white border rounded-lg shadow p-4">
-            <h3 className="text-lg font-semibold mb-2 text-gray-700">
-              Tracking Summary
-            </h3>
-            <table className="w-full text-sm table-auto">
-              <tbody>
-                <tr>
-                  <td className="font-medium py-1">Username</td>
-                  <td className="py-1">{user.username}</td>
-                </tr>
-                <tr>
-                  <td className="font-medium py-1">Email</td>
-                  <td className="py-1">{user.email}</td>
-                </tr>
-                <tr>
-                  <td className="font-medium py-1">Tracking By</td>
-                  <td className="py-1">{trackingBy === "mobile" ? mobile : orderId}</td>
-                </tr>
-                <tr>
-                  <td className="font-medium py-1">Item</td>
-                  <td className="py-1">{item}</td>
-                </tr>
-                <tr>
-                  <td className="font-medium py-1">Place</td>
-                  <td className="py-1">{place}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Location Logs for order tracking */}
-        {trackingBy === "order" && (
-          <div className="mt-8 max-h-64 overflow-auto">
-            <h3 className="font-semibold mb-2">Location Logs for Order</h3>
-            {locationLogs.length === 0 ? (
-              <p className="text-gray-600 text-sm">No location data available.</p>
-            ) : (
-              <table className="w-full border-collapse border border-gray-300 text-sm">
-                <thead>
-                  <tr className="bg-gray-100">
-                    <th className="border border-gray-300 px-2 py-1 text-left">Date/Time</th>
-                    <th className="border border-gray-300 px-2 py-1 text-left">Latitude</th>
-                    <th className="border border-gray-300 px-2 py-1 text-left">Longitude</th>
-                    <th className="border border-gray-300 px-2 py-1 text-left">Place</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {locationLogs.map((log, idx) => (
-                    <tr key={idx} className="odd:bg-white even:bg-gray-50">
-                      <td className="border border-gray-300 px-2 py-1">
-                        {new Date(log.createdAt).toLocaleString()}
-                      </td>
-                      <td className="border border-gray-300 px-2 py-1">{log.latitude}</td>
-                      <td className="border border-gray-300 px-2 py-1">{log.longitude}</td>
-                      <td className="border border-gray-300 px-2 py-1">{log.place}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );
